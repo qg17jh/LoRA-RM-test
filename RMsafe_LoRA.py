@@ -175,7 +175,12 @@ def train(gpu, model, train_dataset, val_dataset, nr, gpus, world_size):
     )
     torch.cuda.set_device(gpu)
     my_auto_wrap_policy = functools.partial(size_based_auto_wrap_policy, min_num_params=int(1e8))
-    model = FSDP(model, auto_wrap_policy=my_auto_wrap_policy, cpu_offload=CPUOffload(offload_params=False), device_id=gpu)
+    model = FSDP(model, 
+                 auto_wrap_policy=my_auto_wrap_policy, 
+                 cpu_offload=CPUOffload(offload_params=False), 
+                 device_id=gpu,
+                 use_orig_params=True,  # Critical for LoRA compatibility
+                 )
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001, betas=(0.9, 0.95), eps=0.00001, weight_decay=0)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = T_max, eta_min = 0.000001)
     
@@ -224,7 +229,9 @@ def train(gpu, model, train_dataset, val_dataset, nr, gpus, world_size):
             GPUtil.showUtilization()
     #model.save_pretrained(output_dir, state_dict=model.state_dict())
     if gpu == 0:
+        print("Saving...")
         model.module.save_pretrained(output_dir)
+        print("Saved!")
 
 if __name__=="__main__":
     set_seed(SEED)
