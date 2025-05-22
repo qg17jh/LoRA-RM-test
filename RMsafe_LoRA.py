@@ -65,7 +65,6 @@ def main():
     
     config = AutoConfig.from_pretrained("microsoft/phi-2", trust_remote_code=True, num_labels=1, pad_token_id=tokenizer.pad_token_id)
     model = PhiForSequenceClassification(config).from_pretrained("microsoft/phi-2", config=config)
-    model.print_trainable_parameters()
     # ===== LoRA Configuration & Wrapping ===== 
     peft_config = LoraConfig(
         task_type="SEQ_CLS",
